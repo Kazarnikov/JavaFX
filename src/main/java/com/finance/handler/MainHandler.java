@@ -27,7 +27,9 @@ public class MainHandler {
         AtomicReference<File> file = new AtomicReference<>();
         final FileChooser fileChooser = new FileChooser();
         configureFileChooser(fileChooser);
-        file.set(fileChooser.showOpenDialog(stage));
+        file.set(new File("/home/sf/Рабочий стол/1.csv"));
+//        file.set(fileChooser.showOpenDialog(stage));
+//        file.set(fileChooser.showOpenMultipleDialog(stage));
         if (file.get() != null) {
             try {
                 return ConvertToJson.convert(file.get());

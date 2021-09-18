@@ -1,4 +1,4 @@
-module com.finance {
+module main.com.finance {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
@@ -11,8 +11,11 @@ module com.finance {
     requires eu.hansolo.tilesfx;
     requires java.sql;
 
-    opens com.finance to javafx.fxml;
+//    exports org.imgscalr;
     exports com.finance;
+    opens com.finance to javafx.fxml;
     exports com.finance.controller;
     opens com.finance.controller to javafx.fxml;
+    exports com.finance.model;
+    opens com.finance.model to javafx.fxml;
 }
