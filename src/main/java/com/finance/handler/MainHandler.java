@@ -2,6 +2,7 @@ package com.finance.handler;
 
 
 import com.finance.convert.ConvertToJson;
+import com.finance.convert.ConvertToJsonOff;
 import com.finance.model.MainTink;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -23,7 +24,7 @@ public class MainHandler {
                 new FileChooser.ExtensionFilter("Все файлы", "*.*"));
     }
 
-    public static List<MainTink> openFile(Stage stage) {
+    public static void openFile(Stage stage) {
         AtomicReference<File> file = new AtomicReference<>();
         final FileChooser fileChooser = new FileChooser();
         configureFileChooser(fileChooser);
@@ -32,12 +33,13 @@ public class MainHandler {
 //        file.set(fileChooser.showOpenMultipleDialog(stage));
         if (file.get() != null) {
             try {
-                return ConvertToJson.convert(file.get());
+//                ConvertToJson.convert(file.get());
+                ConvertToJsonOff.convert(file.get());
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
-        return null;
+//        return null;
     }
 
     public static void start(Stage stage) {

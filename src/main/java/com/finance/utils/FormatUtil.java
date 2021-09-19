@@ -32,4 +32,11 @@ public class FormatUtil {
    public static double formatNumber(Number number) {
       return stringToNumber(DECIMALFORMAT.format(number));
    }
+
+//   public static String validate(String str) {
+//      if (str.matches("[0-9\\-,.]")) {
+//         return stringToNumber(DECIMALFORMAT.format(stringToNumber(str)));
+//
+//      }
+//   }
 }
