@@ -8,29 +8,30 @@ import com.finance.utils.FormatUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.util.converter.LocalDateTimeStringConverter;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 public class ControllerOff {
+    private final String REX_SUM = "(-?\\d{2,10}[,.]?\\d{0,2})";
     ObservableList<TinkOff> observableList = null;
     private boolean isTabMain = false;
     private boolean isTabDiagramma = false;
@@ -76,9 +77,32 @@ public class ControllerOff {
     private TextField searchTextField;
     @FXML
     private HBox month;
+    @FXML
+    private ComboBox<String> comboBox;
+    @FXML
+    private ListView<String> listView;
 
     @FXML
-    void onSave(MouseEvent event) {
+    private DatePicker datePikerDiagrammaFrom;
+
+    @FXML
+    private DatePicker datePikerDiagrammaTo;
+
+    @FXML
+    private void onSelectDate(Event event) {
+        LocalDate from = datePikerDiagrammaFrom.getValue();
+        LocalDate to = datePikerDiagrammaTo.getValue();
+        if (from != null && to != null) {
+            LocalDateTime fromTime = from.atTime(0, 0, 0);
+            LocalDateTime toTime = to.atTime(0, 0, 0);
+            getDiagrammaItems(fromTime, toTime);
+        }
+
+    }
+
+
+    @FXML
+    public void onSave(MouseEvent event) {
         System.err.println(pieChartDiagramma.getData().size());
     }
 
@@ -104,35 +128,36 @@ public class ControllerOff {
         tabPanel.getSelectionModel().select(tabDiagramma);
         pieChartDiagramma.setLabelsVisible(false);
 
-        Set<String> collect = observableList
+        List<String> list = observableList
                 .stream()
-                .map(e -> e.getDateTime().getMonth().name())
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        List<String> list = new ArrayList<>(collect);
+                .map(e -> e.getDateTime()
+                        .getMonth()
+                        .name())
+                .distinct()
+                .collect(Collectors.toList());
+        list.add("ALL");
         Collections.reverse(list);
 
-        for (String entries :list){
-            Button button = new Button(entries);
-            month.getChildren().add(button);
-            button.setOnAction(event1 -> {
-                String value = ((Button) event1.getTarget()).textProperty().getValue();
-                getDiagrammaItems(value);
-            });
-        }
+        comboBox.getItems().addAll(list);
+        comboBox.getSelectionModel().select(0);
+        comboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            getDiagrammaItems(newValue.equals("ALL") ? "" : newValue);
+        });
 
         getDiagrammaItems("");
     }
 
     @FXML
-    void onSelectCategoryDiagramma(MouseEvent event) {
+    public void onSelectCategoryDiagramma(MouseEvent event) {
     }
 
     @FXML
-    void onSelectCategoryMainTable(MouseEvent event) {
+    public void onSelectCategoryMainTable(MouseEvent event) {
     }
 
-    @FXML
-    void initialize() {
+
+    public void initialize() {
+        pieChartDiagramma.setClockwise(true);
         tabMain.setOnClosed(event -> {
             isTabMain = true;
         });
@@ -152,14 +177,24 @@ public class ControllerOff {
                         .setName(t.getNewValue())
         );
 
-
         sum.setCellValueFactory(new PropertyValueFactory<TinkOff, String>("sum"));
         sum.setCellFactory(TextFieldTableCell.forTableColumn());
-        sum.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> t) ->
-                (t.getTableView().getItems()
-                        .get(t.getTablePosition().getRow()))
-                        .setSum(t.getNewValue())
-        );
+        sum.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> t) -> {
+            String value = t.getNewValue();
+            TinkOff tinkOff = t.getTableView().getItems().get(t.getTablePosition().getRow());
+            if (value.matches(REX_SUM)) {
+                tinkOff.setSum(value);
+            } else {
+                tableView.refresh();
+            }
+//            String collect = chars.stream().filter(c -> Character.isDigit(c))
+//            String collect = t.getNewValue()
+//                    .chars().mapToObj(c -> (char) c)
+//                    .filter(c -> Character.isDigit(c) || c.equals('-') || c.equals('.'))
+//                    .map(String::valueOf)
+//                    .collect(Collectors.joining());
+        });
+
 
         category.setCellValueFactory(new PropertyValueFactory<TinkOff, String>("category"));
         category.setCellFactory(TextFieldTableCell.<TinkOff>forTableColumn());
@@ -169,21 +204,27 @@ public class ControllerOff {
                         .setCategory(t.getNewValue())
         );
 
-        dateTime.setCellValueFactory(new PropertyValueFactory<TinkOff, LocalDateTime>("DateTime"));
+        dateTime.setCellValueFactory(new PropertyValueFactory<TinkOff, LocalDateTime>("dateTime"));
+//        dateTime.setCellFactory((param) -> new CustomCellFactory());
+        dateTime.setCellFactory(TextFieldTableCell.forTableColumn(new LocalDateTimeStringConverter()));
+        dateTime.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, LocalDateTime> t) ->
+                (t.getTableView().getItems()
+                        .get(t.getTablePosition().getRow()))
+                        .setDateTime(t.getNewValue())
+        );
+
+
     }
 
-//    private List<MainTink> getLest() {
-//        return StorageMain.getList();
-//    }
-
     //=====EDIT===
+
     @FXML
-    void onEditDate(ActionEvent event) {
+    public void onEditDate(ActionEvent event) {
         System.out.println("---");
     }
 
     @FXML
-    void onEditCategory(ActionEvent event) {
+    public void onEditCategory(ActionEvent event) {
         System.out.println("---");
     }
 
@@ -198,7 +239,8 @@ public class ControllerOff {
     }
 
     @FXML
-    void onSearchText(KeyEvent event) {
+    public void onSearchText(KeyEvent event) {
+        KeyCode enter = KeyCode.ENTER;
         List<TinkOff> collect = observableList
                 .stream()
                 .filter(e -> e.getCategory().toLowerCase().contains(searchTextField.getText().toLowerCase())
@@ -209,7 +251,7 @@ public class ControllerOff {
         tableView.getItems().addAll(FXCollections.observableArrayList(collect));
     }
 
-
+    @FXML
     private void getList() {
         List<TinkOff> list = StorageOff.getList();
         if (!list.isEmpty()) {
@@ -224,45 +266,52 @@ public class ControllerOff {
         save.setDisable(tableView.getItems().isEmpty());
     }
 
-
-    private void getDiagrammaItems(String filter) {
+    @FXML
+    private <T> void getDiagrammaItems(T... filter) {
         pieChartDiagramma.getData().clear();
+        System.out.println(filter);
         List<TinkOff> filterListItems = observableList;
-        if (!Objects.equals(filter, "")) {
+        if (filter[0] instanceof String && filter[0] != "") {
             filterListItems = observableList
                     .stream()
-                    .filter(e -> e.getDateTime().getMonth().name().equals(filter)).collect(Collectors.toList());
+                    .filter(e -> e.getDateTime().getMonth().name().equals(filter[0]))
+                    .collect(Collectors.toList());
         }
-
+        if (filter[0] instanceof LocalDateTime) {
+            filterListItems = observableList
+                    .stream()
+                    .filter(e -> {
+                        LocalDateTime dateTime = e.getDateTime();
+                        return dateTime.isAfter((LocalDateTime) filter[0]) && dateTime.isBefore((LocalDateTime) filter[1]);
+                    })
+                    .collect(Collectors.toList());
+        }
         Function<TinkOff, DoubleStream> sumDouble = tinkOff -> DoubleStream.of(FormatUtil.stringToNumber(tinkOff.getSum()));
-
         double sumPercent = filterListItems.stream().flatMapToDouble(sumDouble).sum();
-        System.out.println(sumPercent);
 
         ToDoubleFunction<TinkOff> doubleFunction = value -> FormatUtil.stringToNumber(value.getSum());
-
-        Map<String, Double> groupByName = filterListItems.stream().collect(
+        //TODO CexBox for "Перевод с карты"
+        Map<String, Double> groupByName = filterListItems.stream().filter(e -> !e.getName().contains("Перевод с карты")).collect(
                 Collectors.groupingBy(TinkOff::getName, Collectors.summingDouble(doubleFunction)));
 
-        Map<String, Double> sortedMap = groupByName.entrySet().stream()
+        Map<String, Double> sortByValueMap = groupByName.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (e1, e2) -> e1, LinkedHashMap::new));
-
-        for (Map.Entry<String, Double> stringDoubleEntry : sortedMap.entrySet()) {
-            pieChartDiagramma.getData().add(new PieChart.Data(stringDoubleEntry.getKey() + ": " + FormatUtil.numberToString(stringDoubleEntry.getValue()),
-                    stringDoubleEntry.getValue() / sumPercent * 100 ));
+        listView.getItems().clear();
+        listView.getItems().addAll(sortByValueMap.keySet());
+        for (Map.Entry<String, Double> stringDoubleEntry : sortByValueMap.entrySet()) {
+            pieChartDiagramma.getData().add(
+                    new PieChart.Data(stringDoubleEntry.getKey() + ": " + FormatUtil.numberToString(stringDoubleEntry.getValue()),
+                            stringDoubleEntry.getValue() / sumPercent * 100));
         }
         label.setText("Продуктов: " + groupByName.size());
         pieChartDiagramma.getData().forEach(data -> {
-            data.getNode().addEventHandler(MouseEvent.ANY, new EventHandler<MouseEvent>() {
-                @Override
-                public void handle(MouseEvent e) {
+            data.getNode().addEventHandler(MouseEvent.ANY, e -> {
 //                    captionDiagramma.setTranslateX(e.getSceneX());
 //                    captionDiagramma.setTranslateY(e.getSceneY());
-                    captionDiagramma.setText(
-                            String.format("%1$s %2$.2f", data.getName().split("-")[0], data.getPieValue()) + "%");
-                }
+                captionDiagramma.setText(
+                        String.format("%1$s %2$.2f", data.getName().split("-")[0], data.getPieValue()) + "%");
             });
         });
 

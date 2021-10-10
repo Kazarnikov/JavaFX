@@ -13,7 +13,7 @@ public class TinkOff {
     private final StringProperty nds = new SimpleStringProperty("1");
     private final StringProperty sum = new SimpleStringProperty();
     private final StringProperty price = new SimpleStringProperty();
-    private final LocalDateTime dateTime;
+    private /*final*/ LocalDateTime dateTime;
     private final StringProperty category = new SimpleStringProperty();
 
     public TinkOff(String name, String sum, LocalDateTime dateTime, String category) {
@@ -112,6 +112,10 @@ public class TinkOff {
 
     public LocalDateTime getDateTime() {
         return dateTime;
+    }
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
     }
 
     public String getCategory() {

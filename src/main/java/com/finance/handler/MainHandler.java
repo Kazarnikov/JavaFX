@@ -29,7 +29,9 @@ public class MainHandler {
         final FileChooser fileChooser = new FileChooser();
         configureFileChooser(fileChooser);
         file.set(new File("/home/sf/Рабочий стол/1.csv"));
+        //выбор одного файла
 //        file.set(fileChooser.showOpenDialog(stage));
+        //выбор несколько файлов
 //        file.set(fileChooser.showOpenMultipleDialog(stage));
         if (file.get() != null) {
             try {

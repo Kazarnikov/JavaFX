@@ -15,6 +15,10 @@ public class MainApplication extends Application {
         launch(args);
     }
 
+    public static Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
     @Override
     public void start(Stage primaryStage) {
         MainApplication.primaryStage = primaryStage;
@@ -33,15 +37,10 @@ public class MainApplication extends Application {
                 Image image = new Image(getClass().getResourceAsStream("/com/finance/icons/main.png"));
                 primaryStage.getIcons().add(image);
             } catch (Exception e) {
-                System.err.println("ytn");
                 e.printStackTrace();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static Stage getPrimaryStage() {
-        return primaryStage;
     }
 }
