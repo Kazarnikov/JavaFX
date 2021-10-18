@@ -10,6 +10,7 @@ module main.com.finance {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires java.sql;
+    requires org.junit.jupiter.api;
 
 //    exports org.imgscalr;
     exports com.finance;

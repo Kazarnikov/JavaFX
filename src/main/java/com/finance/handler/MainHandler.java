@@ -1,9 +1,8 @@
 package com.finance.handler;
 
 
-import com.finance.convert.ConvertToJson;
+
 import com.finance.convert.ConvertToJsonOff;
-import com.finance.model.MainTink;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
@@ -12,7 +11,6 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MainHandler {
@@ -28,7 +26,8 @@ public class MainHandler {
         AtomicReference<File> file = new AtomicReference<>();
         final FileChooser fileChooser = new FileChooser();
         configureFileChooser(fileChooser);
-        file.set(new File("/home/sf/Рабочий стол/1.csv"));
+//        file.set(new File("/home/sf/Рабочий стол/1.csv"));
+        file.set(new File("/media/D/Ubunta/Загрузки/fx/Finance/src/main/resources/csv/1.csv"));
         //выбор одного файла
 //        file.set(fileChooser.showOpenDialog(stage));
         //выбор несколько файлов
