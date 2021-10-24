@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -15,7 +16,22 @@ public class FormatUtil {
     private static final DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
     private static final DecimalFormat DECIMALFORMAT = new DecimalFormat("#0.00", symbols);
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+//    private static final String REX_SUM = "(-?\\d{1,10}[,.]?\\d{0,2})";
+    private static final String REX_SUM = "(^-?\\d+([,.]\\d{1,2})?$)";
+    private static final String REX_DATE = "(^\\d{2}\\.\\d{2}\\.\\d{4}$)";
+    private static final String REX_DATE_TIME = "(^\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}:\\d{2}$)";
     //Date
+    public static String getRexSum() {
+        return REX_SUM;
+    }
+    public static String getRexDate() {
+        return REX_DATE;
+    }
+    public static String getRexDateTime() {
+        return REX_DATE_TIME;
+    }
+
     public static DateTimeFormatter dateTimeFormatter() {
         return dateTimeFormatter;
     }
@@ -26,6 +42,10 @@ public class FormatUtil {
 
     public static String nowLocalDateTime() {
         return LocalDateTime.now().format(dateTimeFormatter);
+    }
+
+    public static String nowLocalDate() {
+        return LocalDate.now().format(dateFormatter);
     }
 
     public static String numberToString(Number number) {
@@ -41,12 +61,11 @@ public class FormatUtil {
         return Timestamp.valueOf(LocalDateTime.from(FormatUtil.dateTimeFormatter().parse(args))).getTime() / 1000;
     }
 
-
     //Number
     public static double stringToNumber(String str) {
-        if (isEmpty(str)) {
+        if (isNonEmpty(str)) {
             return Double.parseDouble(str.replaceAll(",", "."));
-        } throw new NoSuchElementException("--");
+        } throw new NoSuchElementException("stringToNumber not null");
     }
 
     public static String sumString(String str1, String str2) {
@@ -76,13 +95,4 @@ public class FormatUtil {
     public static boolean isNonEmpty(String str){
         return !isEmpty(str);
     }
-
-
-
-//   public static String validate(String str) {
-//      if (str.matches("[0-9\\-,.]")) {
-//         return stringToNumber(DECIMALFORMAT.format(stringToNumber(str)));
-//
-//      }
-//   }
 }

@@ -1,17 +1,33 @@
 package com.finance.controller;
 
 import com.finance.model.TinkOff;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import org.controlsfx.control.CheckComboBox;
 
 import java.net.URL;
+import java.util.HashSet;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 @SuppressWarnings("unused")
-public class FieldsTable {
+abstract class FieldsTable {
+    protected final String ALL = "ALL";
+    protected final Set<String> categorySearch = new HashSet<>();
+    protected final Set<String> monthSearch = new HashSet<>();
+    protected ObservableList<TinkOff> observableList = null;
+    protected boolean isTabMain = false;
+    protected boolean isTabDiagramma = false;
+    protected boolean isTransferCard = false;
+
     @FXML
     protected TableColumn<TinkOff, String> dateOperation;
     @FXML
@@ -44,7 +60,7 @@ public class FieldsTable {
     protected TableColumn<TinkOff, String> operationAmountRounding;
     @FXML
     protected TableColumn<TinkOff, String> price;
-//----------------------------------------------------
+    //----------------------------------------------------
     @FXML
     protected ResourceBundle resources;
     @FXML
@@ -80,11 +96,55 @@ public class FieldsTable {
     @FXML
     protected HBox month;
     @FXML
-    protected ComboBox<String> comboBox;
+    protected CheckComboBox<String> monthBox;
+    @FXML
+    protected CheckComboBox<String> categoryBox;
     @FXML
     protected ListView<String> listView;
     @FXML
     protected DatePicker datePikerDiagrammaFrom;
     @FXML
     protected DatePicker datePikerDiagrammaTo;
+    @FXML
+    protected MenuBar menuBarMain;
+    @FXML
+    protected MenuItem menuSetting;
+    @FXML
+    protected MenuItem menuExit;
+
+    //-----MENU -----//
+    @FXML
+    protected abstract void onMenuSetting(ActionEvent event);
+
+    @FXML
+    public abstract void onSelectDate(Event event);
+
+    @FXML
+    public abstract void onSave(MouseEvent event);
+
+    @FXML
+    public abstract void onSelectFile(MouseEvent event);
+
+    @FXML
+    public abstract void onUpdate(MouseEvent event);
+
+    @FXML
+    public abstract void onSelectCategoryDiagramma(MouseEvent event);
+
+    @FXML
+    public abstract void onSelectCategoryMainTable(MouseEvent event);
+
+    @FXML
+    public abstract void onSearchText(KeyEvent event);
+
+    @FXML
+    protected abstract void getList();
+
+    @FXML
+    protected abstract <T> void getDiagrammaItems(T... filter);
+
+    @FXML
+    protected abstract void onMouseClicked(MouseEvent event);
+
+    public abstract void initialize();
 }

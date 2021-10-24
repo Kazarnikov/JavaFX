@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @SuppressWarnings("unused")
 public class TinkOff {
     //json check
-    private final StringProperty name = new SimpleStringProperty(); //description
+    private final StringProperty description = new SimpleStringProperty(); //name
     private final StringProperty quantity = new SimpleStringProperty("1.0");
     private final StringProperty paymentType = new SimpleStringProperty("4");
     private final StringProperty productType = new SimpleStringProperty("1");
@@ -40,18 +40,17 @@ public class TinkOff {
     private final StringProperty cashback = new SimpleStringProperty();
     private final StringProperty category = new SimpleStringProperty();
     private final StringProperty mcc = new SimpleStringProperty();
-    private final StringProperty description = new SimpleStringProperty();
     private final StringProperty bonuses = new SimpleStringProperty();
     private final StringProperty roundingInvestment = new SimpleStringProperty();
     private final StringProperty operationAmountRounding = new SimpleStringProperty();
 
-    //invest kapilka
-    public TinkOff(String name, String price) {
-        this.description.set(name);
+    //invest moneybox
+    public TinkOff(String description, String price) {
+        this.description.set(description);
+        this.datePayment.set(FormatUtil.nowLocalDate());
         this.dateOperation.set(FormatUtil.nowLocalDateTime());
-        this.name.set(name);
         this.price.set(price);
-        this.category.set(name);
+        this.category.set(description);
         this.status.set("OK");
         this.transactionAmount.set("0.00");
         this.transactionCurrency.set("RUB");
@@ -78,7 +77,6 @@ public class TinkOff {
                    String bonuses,
                    String roundingInvestment,
                    String operationAmountRounding,
-                   String name,
                    String sum) {
 
         this.dateOperation.set(dateOperation);
@@ -96,20 +94,7 @@ public class TinkOff {
         this.bonuses.set(bonuses);
         this.roundingInvestment.set(roundingInvestment);
         this.operationAmountRounding.set(operationAmountRounding);
-        this.name.set(name);
         this.price.set(sum);
-    }
-
-    public String getName() {
-        return name.get();
-    }
-
-    public void setName(String name) {
-        this.name.set(name);
-    }
-
-    public StringProperty nameProperty() {
-        return name;
     }
 
     public String getQuantity() {
@@ -362,7 +347,7 @@ public class TinkOff {
 
     @Override
     public String toString() {
-        return "{\"name\": \"" + name + '\"' +
+        return "{\"name\": \"" + description + '\"' +
                 ", \"price\": " + price +
                 ", \"sum\": " + price +
                 ", \"quantity\": " + quantity +

@@ -27,18 +27,16 @@ public class MainApplication extends Application {
 
     public void initRootLayout() {
         try {
-//            FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("view-v2.fxml"));
             FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("view-off.fxml"));
-//            FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("main-view.fxml"));
             primaryStage.setTitle("---------------");
             primaryStage.setScene(new Scene(fxmlLoader.load()));
             primaryStage.show();
-            try {
-                Image image = new Image(getClass().getResourceAsStream("/com/finance/icons/main.png"));
-                primaryStage.getIcons().add(image);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+//            try {
+//                Image image = new Image(getClass().getResourceAsStream("/com/finance/icons/main.png"));
+//                primaryStage.getIcons().add(image);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
         } catch (IOException e) {
             e.printStackTrace();
         }
