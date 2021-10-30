@@ -1,6 +1,6 @@
 package com.finance.controller;
 
-import com.finance.model.TinkOff;
+import com.finance.model.Transaction;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -13,53 +13,54 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import org.controlsfx.control.CheckComboBox;
 
+import java.math.BigDecimal;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 
 @SuppressWarnings("unused")
-abstract class FieldsTable {
+abstract class MainControllerXML {
     protected final String ALL = "ALL";
     protected final Set<String> categorySearch = new HashSet<>();
     protected final Set<String> monthSearch = new HashSet<>();
-    protected ObservableList<TinkOff> observableList = null;
+    protected ObservableList<Transaction> observableList = null;
     protected boolean isTabMain = false;
-    protected boolean isTabDiagramma = false;
+    protected boolean isTabDiagram = false;
     protected boolean isTransferCard = false;
 
     @FXML
-    protected TableColumn<TinkOff, String> dateOperation;
+    protected TableColumn<Transaction, LocalDateTime> dateOperation;
     @FXML
-    protected TableColumn<TinkOff, String> datePayment;
+    protected TableColumn<Transaction, LocalDate> datePayment;
     @FXML
-    protected TableColumn<TinkOff, String> numberCard;
+    protected TableColumn<Transaction, String> numberCard;
     @FXML
-    protected TableColumn<TinkOff, String> status;
+    protected TableColumn<Transaction, String> status;
     @FXML
-    protected TableColumn<TinkOff, String> transactionAmount;
+    protected TableColumn<Transaction, BigDecimal> transactionAmount;
     @FXML
-    protected TableColumn<TinkOff, String> transactionCurrency;
+    protected TableColumn<Transaction, String> transactionCurrency;
     @FXML
-    protected TableColumn<TinkOff, String> paymentAmount;
+    protected TableColumn<Transaction, BigDecimal> paymentAmount;
     @FXML
-    protected TableColumn<TinkOff, String> paymentCurrency;
+    protected TableColumn<Transaction, String> paymentCurrency;
     @FXML
-    protected TableColumn<TinkOff, String> cashback;
+    protected TableColumn<Transaction, BigDecimal> cashback;
     @FXML
-    protected TableColumn<TinkOff, String> category;
+    protected TableColumn<Transaction, String> category;
     @FXML
-    protected TableColumn<TinkOff, String> mcc;
+    protected TableColumn<Transaction, String> mcc;
     @FXML
-    protected TableColumn<TinkOff, String> description;
+    protected TableColumn<Transaction, String> description;
     @FXML
-    protected TableColumn<TinkOff, String> bonuses;
+    protected TableColumn<Transaction, BigDecimal> bonuses;
     @FXML
-    protected TableColumn<TinkOff, String> roundingInvestment;
+    protected TableColumn<Transaction, BigDecimal> roundingInvestment;
     @FXML
-    protected TableColumn<TinkOff, String> operationAmountRounding;
-    @FXML
-    protected TableColumn<TinkOff, String> price;
+    protected TableColumn<Transaction, BigDecimal> operationAmountRounding;
     //----------------------------------------------------
     @FXML
     protected ResourceBundle resources;
@@ -74,15 +75,15 @@ abstract class FieldsTable {
     @FXML
     protected AnchorPane anchorPaneTabMain;
     @FXML
-    protected TableView<TinkOff> tableView;
+    protected TableView<Transaction> tableView;
     @FXML
-    protected Tab tabDiagramma;
+    protected Tab tabDiagram;
     @FXML
-    protected AnchorPane anchorPaneTabDiagramma;
+    protected AnchorPane anchorPaneTabDiagram;
     @FXML
-    protected PieChart pieChartDiagramma;
+    protected PieChart pieChartDiagram;
     @FXML
-    protected Label captionDiagramma;
+    protected Label captionDiagram;
     @FXML
     protected Button selectFile;
     @FXML
@@ -102,47 +103,36 @@ abstract class FieldsTable {
     @FXML
     protected ListView<String> listView;
     @FXML
-    protected DatePicker datePikerDiagrammaFrom;
+    protected DatePicker datePikerDiagramFrom;
     @FXML
-    protected DatePicker datePikerDiagrammaTo;
+    protected DatePicker datePikerDiagramTo;
     @FXML
     protected MenuBar menuBarMain;
     @FXML
     protected MenuItem menuSetting;
     @FXML
     protected MenuItem menuExit;
-
     //-----MENU -----//
     @FXML
     protected abstract void onMenuSetting(ActionEvent event);
-
     @FXML
     public abstract void onSelectDate(Event event);
-
     @FXML
     public abstract void onSave(MouseEvent event);
-
     @FXML
     public abstract void onSelectFile(MouseEvent event);
-
     @FXML
     public abstract void onUpdate(MouseEvent event);
-
     @FXML
-    public abstract void onSelectCategoryDiagramma(MouseEvent event);
-
+    public abstract void onSelectCategoryDiagram(MouseEvent event);
     @FXML
     public abstract void onSelectCategoryMainTable(MouseEvent event);
-
     @FXML
     public abstract void onSearchText(KeyEvent event);
-
     @FXML
     protected abstract void getList();
-
     @FXML
-    protected abstract <T> void getDiagrammaItems(T... filter);
-
+    protected abstract <T> void getDiagramItems(T... filter);
     @FXML
     protected abstract void onMouseClicked(MouseEvent event);
 

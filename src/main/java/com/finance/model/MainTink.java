@@ -10,7 +10,7 @@ public class MainTink {
     private final StringProperty name = new SimpleStringProperty();
     private final LongProperty dateTime = new SimpleLongProperty();
     private final StringProperty retailPlace = new SimpleStringProperty();
-    private final ListProperty<TinkOff> items = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ListProperty<Transaction> items = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final LongProperty operationType = new SimpleLongProperty(1);
     private final LongProperty cashTotalSum = new SimpleLongProperty(0);
     private final LongProperty code = new SimpleLongProperty(3);
@@ -63,21 +63,21 @@ public class MainTink {
         return retailPlace;
     }
 
-    public ObservableList<TinkOff> getItems() {
+    public ObservableList<Transaction> getItems() {
         return items.get();
     }
 
-    public void setItems(ObservableList<TinkOff> items) {
+    public void setItems(ObservableList<Transaction> items) {
         this.items.set(items);
     }
 
-    public void addItems(TinkOff items) {
+    public void addItems(Transaction items) {
 //        this.items.add(FXCollections.observableArrayList(items));
         this.items.add(items);
     }
 
 
-    public ListProperty<TinkOff> itemsProperty() {
+    public ListProperty<Transaction> itemsProperty() {
         return items;
     }
 

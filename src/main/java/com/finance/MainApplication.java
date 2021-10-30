@@ -27,8 +27,8 @@ public class MainApplication extends Application {
 
     public void initRootLayout() {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("view-off.fxml"));
-            primaryStage.setTitle("---------------");
+            FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("view-main.fxml"));
+            primaryStage.setTitle("Finance");
             primaryStage.setScene(new Scene(fxmlLoader.load()));
             primaryStage.show();
 //            try {

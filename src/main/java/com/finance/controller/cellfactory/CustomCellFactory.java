@@ -1,5 +1,6 @@
 //package com.finance.controller.cellfactory;
 //
+//import com.finance.model.Transaction;
 //import javafx.application.Platform;
 //import javafx.scene.control.ContentDisplay;
 //import javafx.scene.control.TextField;
@@ -9,7 +10,7 @@
 //
 //import java.time.LocalDateTime;
 //
-//public class CustomCellFactory extends javafx.scene.control.TableCell<com.finance.model.TinkOff, LocalDateTime> {
+//public class CustomCellFactory extends javafx.scene.control.TableCell<Transaction, LocalDateTime> {
 //
 //    TextField textField = new TextField();
 //    Text text = new Text();
@@ -17,7 +18,7 @@
 //    public CustomCellFactory() {
 //        textField.setOnKeyPressed(keyEvent -> {
 //            if (keyEvent.getCode() == KeyCode.ENTER) {
-//                commitEdit(textField.getText());
+//                commitEdit(LocalDateTime.parse(textField.getText()));
 //            }
 //        });
 //    }
@@ -58,9 +59,8 @@
 //                text.setFill(Color.BLACK);
 //            }
 //
-//            text.setText(item);
+//            text.setText(item.toString());
 //            setGraphic(text);
 //        }
 //    }
-//}
 //}

@@ -2,6 +2,7 @@ module main.com.finance {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
+//    requires lombok;
 
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;
@@ -19,4 +20,6 @@ module main.com.finance {
     opens com.finance.controller to javafx.fxml;
     exports com.finance.model;
     opens com.finance.model to javafx.fxml;
+    exports com.finance.controller.converter;
+    opens com.finance.controller.converter to javafx.fxml;
 }

@@ -1,11 +1,13 @@
 package com.finance.controller;
 
 import com.finance.MainApplication;
+import com.finance.controller.converter.BigDecimalStringConverter;
+import com.finance.controller.converter.LocalDateStringConverter;
+import com.finance.controller.converter.LocalDateTimeStringConverter;
 import com.finance.convert.Structure;
-import com.finance.handler.MainHandler;
-import com.finance.model.TinkOff;
-import com.finance.storage.StorageOff;
-import com.finance.utils.FormatUtil;
+import com.finance.handler.MyFileChooser;
+import com.finance.model.Transaction;
+import com.finance.storage.Storage;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -27,6 +29,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -36,29 +39,17 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 @SuppressWarnings("unused")
-public class Controller extends FieldsTable {
-    //-----MENU -----//
+public class MainController extends MainControllerXML {
+    //-----Menu Settings-----//
     @Override
     protected void onMenuSetting(ActionEvent event) {
-
-
     }
+    //-----Menu Settings-----//
 
-
-    @Override
-    public void onSelectDate(Event event) {
-        LocalDate after = datePikerDiagrammaFrom.getValue();
-        LocalDate before = datePikerDiagrammaTo.getValue();
-        if (after != null && before != null) {
-            LocalDateTime fromTime = after.atTime(0, 0, 0);
-            LocalDateTime toTime = before.atTime(23, 59, 59);
-            getDiagrammaItems(fromTime, toTime);
-        }
-    }
-
+    //-----Buttons Main-----//
     @Override
     public void onSave(MouseEvent event) {
-        System.err.println(pieChartDiagramma.getData().size());
+        System.err.println(pieChartDiagram.getData().size());
     }
 
     @Override
@@ -68,21 +59,34 @@ public class Controller extends FieldsTable {
             tabPanel.getSelectionModel().select(tabMain);
             isTabMain = false;
         }
-        MainHandler.openFile(MainApplication.getPrimaryStage());
+        MyFileChooser.openFile();
         getList();
     }
 
     @Override
     public void onUpdate(MouseEvent event) {
-        if (isTabDiagramma) {
-            tabPanel.getTabs().add(tabDiagramma);
-            isTabDiagramma = false;
+        if (isTabDiagram) {
+            tabPanel.getTabs().add(tabDiagram);
+            isTabDiagram = false;
         }
         monthSearch.clear();
         categorySearch.clear();
-        tabPanel.getSelectionModel().select(tabDiagramma);
+        tabPanel.getSelectionModel().select(tabDiagram);
         categoryBox();
         monthBox();
+    }
+    //-----Buttons Main-----//
+
+    //-----Filter Diagram-----//
+    @Override
+    public void onSelectDate(Event event) {
+        LocalDate after = datePikerDiagramFrom.getValue();
+        LocalDate before = datePikerDiagramTo.getValue();
+        if (after != null && before != null) {
+            LocalDateTime fromTime = after.atTime(0, 0, 0);
+            LocalDateTime toTime = before.atTime(23, 59, 59);
+            getDiagramItems(fromTime, toTime);
+        }
     }
 
     private void monthBox() {
@@ -97,16 +101,16 @@ public class Controller extends FieldsTable {
         monthBox.getCheckModel().getCheckedItems().addListener((ListChangeListener<String>) c -> {
             monthSearch.clear();
             monthSearch.addAll(monthBox.getCheckModel().getCheckedItems());
-            getDiagrammaItems();
+            getDiagramItems();
         });
-        getDiagrammaItems();
+        getDiagramItems();
     }
 
     private void categoryBox() {
         categoryBox.getItems().clear();
         List<String> list = observableList
                 .stream()
-                .map(TinkOff::getCategory)
+                .map(Transaction::getCategory)
                 .distinct()
                 .collect(Collectors.toList());
         Collections.reverse(list);
@@ -114,12 +118,13 @@ public class Controller extends FieldsTable {
         categoryBox.getCheckModel().getCheckedItems().addListener((ListChangeListener<String>) c -> {
             categorySearch.clear();
             categorySearch.addAll(categoryBox.getCheckModel().getCheckedItems());
-            getDiagrammaItems();
+            getDiagramItems();
         });
     }
+    //-----Filter Diagram-----//
 
     @Override
-    public void onSelectCategoryDiagramma(MouseEvent event) {
+    public void onSelectCategoryDiagram(MouseEvent event) {
     }
 
     @Override
@@ -130,11 +135,11 @@ public class Controller extends FieldsTable {
     protected void onMouseClicked(MouseEvent event) {
     }
 
-
+    //-----Search-----//
     @Override
     public void onSearchText(KeyEvent event) {
         KeyCode enter = KeyCode.ENTER;
-        List<TinkOff> collect = observableList
+        List<Transaction> collect = observableList
                 .stream()
                 .filter(e -> e.getCategory().toLowerCase().contains(searchTextField.getText().toLowerCase())
                         || e.getDescription().toLowerCase().contains(searchTextField.getText().toLowerCase()))
@@ -143,10 +148,11 @@ public class Controller extends FieldsTable {
         tableView.getItems().clear();
         tableView.getItems().addAll(FXCollections.observableArrayList(collect));
     }
+    //-----Search-----//
 
     @Override
     protected void getList() {
-        Set<TinkOff> list = StorageOff.getList();
+        Set<Transaction> list = Storage.getList();
         if (!list.isEmpty()) {
             observableList = FXCollections.observableArrayList(list);
             tableView.getItems().clear();
@@ -162,233 +168,209 @@ public class Controller extends FieldsTable {
 
     @SafeVarargs
     @Override
-    protected final <T> void getDiagrammaItems(T... filter) {
-        pieChartDiagramma.getData().clear();
+    protected final <T> void getDiagramItems(T... filter) {
+        pieChartDiagram.getData().clear();
         listView.getItems().clear();
-        List<TinkOff> filterListItems = observableList
+        List<Transaction> filterListItems = observableList
                 .stream()
 //                .filter(tinkOff -> FilterSearch.filter(tinkOff, filter))
+                //TODO CexBox for "Перевод с карты"
+                .filter(e -> !e.getDescription().contains(Structure.TRANSFER_CARD.getValue()))
                 .filter(i -> categorySearch.isEmpty() || categorySearch.contains(i.getCategory()))
                 .filter(i -> monthSearch.isEmpty() || monthSearch.contains(i.getDateOperation().getMonth().name()))
                 .filter(i -> !isTransferCard || !Structure.TRANSFER_CARD.getValue().contains(i.getDescription()))
-
                 .collect(Collectors.toList());
 
-        Function<TinkOff, DoubleStream> sumDouble = tinkOff -> DoubleStream.of(FormatUtil.stringToNumber(tinkOff.getOperationAmountRounding()));
+        Function<Transaction, DoubleStream> sumDouble = transaction -> DoubleStream.of(transaction.getOperationAmountRounding().doubleValue());
         double sumPercent = filterListItems.stream().flatMapToDouble(sumDouble).sum();
 
-        ToDoubleFunction<TinkOff> doubleFunction = value -> FormatUtil.stringToNumber(value.getOperationAmountRounding());
-        //TODO CexBox for "Перевод с карты"
+        ToDoubleFunction<Transaction> doubleFunction = var -> var.getPaymentAmount().doubleValue();
+
         Map<String, Double> groupByName = filterListItems
-                .stream().filter(e -> !e.getDescription().contains(Structure.TRANSFER_CARD.getValue()))
-                .collect(Collectors.groupingBy(TinkOff::getDescription, Collectors.summingDouble(doubleFunction)));
+                .stream()
+                .collect(Collectors.groupingBy(Transaction::getDescription, Collectors.summingDouble(doubleFunction)));
 
         Map<String, Double> sortByValueMap = groupByName.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (e1, e2) -> e1, LinkedHashMap::new));
         listView.getItems().addAll(sortByValueMap.keySet());
-        Platform.runLater(() -> {
-            pieChartDiagramma.setData(FXCollections.observableArrayList());
+//        Platform.runLater(() -> {
+            pieChartDiagram.setData(FXCollections.observableArrayList());
             for (Map.Entry<String, Double> stringDoubleEntry : sortByValueMap.entrySet()) {
-                pieChartDiagramma.getData().add(
-                        new PieChart.Data(stringDoubleEntry.getKey() + ": " + FormatUtil.numberToString(stringDoubleEntry.getValue()),
+                pieChartDiagram.getData().add(
+                        new PieChart.Data(stringDoubleEntry.getKey() + ": " + stringDoubleEntry.getValue(),
                                 stringDoubleEntry.getValue() / sumPercent * 100));
             }
             label.setText("Продуктов: " + groupByName.size());
-            pieChartDiagramma.getData().forEach(data -> {
+            pieChartDiagram.getData().forEach(data -> {
                 data.getNode().addEventHandler(MouseEvent.ANY, e -> {
-                    captionDiagramma.setText(
+                    captionDiagram.setText(
                             String.format("%1$s %2$.2f", data.getName().split("-")[0], data.getPieValue()) + "%");
                 });
             });
-        });
+//        });
     }
 
     @Override
     public void initialize() {
-        pieChartDiagramma.setClockwise(true);
-
         tabMain.setOnClosed(event -> isTabMain = true);
-        tabDiagramma.setOnClosed(event -> isTabDiagramma = true);
+        tabDiagram.setOnClosed(event -> isTabDiagram = true);
 
         tabPanel.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
         tableView.setPlaceholder(new Label("Нет данных"));
 
         dateOperation.setCellValueFactory(new PropertyValueFactory<>("dateOperation"));
-        dateOperation.setCellFactory(TextFieldTableCell.forTableColumn());
-        dateOperation.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            String value = newValue.getNewValue();
-            TinkOff tinkOff = newValue.getTableView().getItems().get(newValue.getTablePosition().getRow());
-            if (value.matches(FormatUtil.getRexDateTime())) {
-                tinkOff.setDateOperation(value);
-            }
+        dateOperation.setCellFactory(TextFieldTableCell.forTableColumn(new LocalDateTimeStringConverter()));
+        dateOperation.setOnEditCommit((TableColumn.CellEditEvent<Transaction, LocalDateTime> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
+                    .setDateOperation(newValue.getNewValue() != null ? newValue.getNewValue() : newValue.getOldValue());
             tableView.refresh();
         });
 
         datePayment.setCellValueFactory(new PropertyValueFactory<>("datePayment"));
-        datePayment.setCellFactory(TextFieldTableCell.forTableColumn());
-        datePayment.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            String value = newValue.getNewValue();
-            TinkOff tinkOff = newValue.getTableView().getItems().get(newValue.getTablePosition().getRow());
-            if (value.matches(FormatUtil.getRexDate())) {
-                tinkOff.setDatePayment(value);
-            }
+        datePayment.setCellFactory(TextFieldTableCell.forTableColumn(new LocalDateStringConverter()));
+        datePayment.setOnEditCommit((TableColumn.CellEditEvent<Transaction, LocalDate> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
+                    .setDatePayment(newValue.getNewValue() != null ? newValue.getNewValue() : newValue.getOldValue());
             tableView.refresh();
         });
 
         numberCard.setCellValueFactory(new PropertyValueFactory<>("numberCard"));
         numberCard.setCellFactory(TextFieldTableCell.forTableColumn());
-        numberCard.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            (newValue.getTableView().getItems()
-                    .get(newValue.getTablePosition().getRow()))
+        numberCard.setOnEditCommit((TableColumn.CellEditEvent<Transaction, String> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
                     .setNumberCard(newValue.getNewValue());
             tableView.refresh();
         });
 
         status.setCellValueFactory(new PropertyValueFactory<>("status"));
         status.setCellFactory(TextFieldTableCell.forTableColumn());
-        status.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            (newValue.getTableView().getItems()
-                    .get(newValue.getTablePosition().getRow()))
+        status.setOnEditCommit((TableColumn.CellEditEvent<Transaction, String> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
                     .setStatus(newValue.getNewValue());
             tableView.refresh();
         });
 
         transactionAmount.setCellValueFactory(new PropertyValueFactory<>("transactionAmount"));
-        transactionAmount.setCellFactory(TextFieldTableCell.forTableColumn());
-        transactionAmount.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            String value = newValue.getNewValue();
-            TinkOff tinkOff = newValue.getTableView().getItems().get(newValue.getTablePosition().getRow());
-            if (value.matches(FormatUtil.getRexSum())) {
-                tinkOff.setTransactionAmount(value.replaceAll(",", "."));
-            }
+        transactionAmount.setCellFactory(TextFieldTableCell.forTableColumn(new BigDecimalStringConverter()));
+        transactionAmount.setOnEditCommit((TableColumn.CellEditEvent<Transaction, BigDecimal> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
+                    .setTransactionAmount(newValue.getNewValue() != null ? newValue.getNewValue() : newValue.getOldValue());
             tableView.refresh();
         });
 
         transactionCurrency.setCellValueFactory(new PropertyValueFactory<>("transactionCurrency"));
         transactionCurrency.setCellFactory(TextFieldTableCell.forTableColumn());
-        transactionCurrency.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            (newValue.getTableView().getItems()
-                    .get(newValue.getTablePosition().getRow()))
+        transactionCurrency.setOnEditCommit((TableColumn.CellEditEvent<Transaction, String> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
                     .setTransactionCurrency(newValue.getNewValue());
             tableView.refresh();
         });
 
         paymentAmount.setCellValueFactory(new PropertyValueFactory<>("paymentAmount"));
-        paymentAmount.setCellFactory(TextFieldTableCell.forTableColumn());
-        paymentAmount.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            String value = newValue.getNewValue();
-            TinkOff tinkOff = newValue.getTableView().getItems().get(newValue.getTablePosition().getRow());
-            if (value.matches(FormatUtil.getRexSum())) {
-                tinkOff.setPaymentAmount(value.replaceAll(",", "."));
-            }
+        paymentAmount.setCellFactory(TextFieldTableCell.forTableColumn(new BigDecimalStringConverter()));
+        paymentAmount.setOnEditCommit((TableColumn.CellEditEvent<Transaction, BigDecimal> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
+                    .setPaymentAmount(newValue.getNewValue() != null ? newValue.getNewValue() : newValue.getOldValue());
             tableView.refresh();
         });
 
         paymentCurrency.setCellValueFactory(new PropertyValueFactory<>("paymentCurrency"));
         paymentCurrency.setCellFactory(TextFieldTableCell.forTableColumn());
-        paymentCurrency.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            (newValue.getTableView().getItems()
-                    .get(newValue.getTablePosition().getRow()))
+        paymentCurrency.setOnEditCommit((TableColumn.CellEditEvent<Transaction, String> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
                     .setPaymentCurrency(newValue.getNewValue());
             tableView.refresh();
         });
 
         cashback.setCellValueFactory(new PropertyValueFactory<>("cashback"));
-        cashback.setCellFactory(TextFieldTableCell.forTableColumn());
-        cashback.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            String value = newValue.getNewValue();
-            TinkOff tinkOff = newValue.getTableView().getItems().get(newValue.getTablePosition().getRow());
-            if (value.matches(FormatUtil.getRexSum())) {
-                tinkOff.setCashback(value.replaceAll(",", "."));
-            }
+        cashback.setCellFactory(TextFieldTableCell.forTableColumn(new BigDecimalStringConverter()));
+        cashback.setOnEditCommit((TableColumn.CellEditEvent<Transaction, BigDecimal> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
+                    .setCashback(newValue.getNewValue() != null ? newValue.getNewValue() : newValue.getOldValue());
             tableView.refresh();
         });
 
         category.setCellValueFactory(new PropertyValueFactory<>("category"));
         category.setCellFactory(TextFieldTableCell.forTableColumn());
-        category.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            (newValue.getTableView().getItems()
-                    .get(newValue.getTablePosition().getRow()))
+        category.setOnEditCommit((TableColumn.CellEditEvent<Transaction, String> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
                     .setCategory(newValue.getNewValue());
             tableView.refresh();
         });
 
         mcc.setCellValueFactory(new PropertyValueFactory<>("mcc"));
         mcc.setCellFactory(TextFieldTableCell.forTableColumn());
-        mcc.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            (newValue.getTableView().getItems()
-                    .get(newValue.getTablePosition().getRow()))
+        mcc.setOnEditCommit((TableColumn.CellEditEvent<Transaction, String> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
                     .setMcc(newValue.getNewValue());
             tableView.refresh();
         });
 
         description.setCellValueFactory(new PropertyValueFactory<>("description"));
         description.setCellFactory(TextFieldTableCell.forTableColumn());
-        description.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            (newValue.getTableView().getItems()
-                    .get(newValue.getTablePosition().getRow()))
+        description.setOnEditCommit((TableColumn.CellEditEvent<Transaction, String> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
                     .setDescription(newValue.getNewValue());
             tableView.refresh();
         });
 
         bonuses.setCellValueFactory(new PropertyValueFactory<>("bonuses"));
-        bonuses.setCellFactory(TextFieldTableCell.forTableColumn());
-        bonuses.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            String value = newValue.getNewValue();
-            TinkOff tinkOff = newValue.getTableView().getItems().get(newValue.getTablePosition().getRow());
-            if (value.matches(FormatUtil.getRexSum())) {
-                tinkOff.setBonuses(value.replaceAll(",", "."));
-            }
+        bonuses.setCellFactory(TextFieldTableCell.forTableColumn(new BigDecimalStringConverter()));
+        bonuses.setOnEditCommit((TableColumn.CellEditEvent<Transaction, BigDecimal> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
+                    .setBonuses(newValue.getNewValue() != null ? newValue.getNewValue() : newValue.getOldValue());
             tableView.refresh();
         });
 
         roundingInvestment.setCellValueFactory(new PropertyValueFactory<>("roundingInvestment"));
-        roundingInvestment.setCellFactory(TextFieldTableCell.forTableColumn());
-        roundingInvestment.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            String value = newValue.getNewValue();
-            TinkOff tinkOff = newValue.getTableView().getItems().get(newValue.getTablePosition().getRow());
-            if (value.matches(FormatUtil.getRexSum())) {
-                tinkOff.setRoundingInvestment(value.replaceAll(",", "."));
-            }
+        roundingInvestment.setCellFactory(TextFieldTableCell.forTableColumn(new BigDecimalStringConverter()));
+        roundingInvestment.setOnEditCommit((TableColumn.CellEditEvent<Transaction, BigDecimal> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
+                    .setRoundingInvestment(newValue.getNewValue() != null ? newValue.getNewValue() : newValue.getOldValue());
             tableView.refresh();
         });
 
         operationAmountRounding.setCellValueFactory(new PropertyValueFactory<>("operationAmountRounding"));
-        operationAmountRounding.setCellFactory(TextFieldTableCell.forTableColumn());
-        operationAmountRounding.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            String value = newValue.getNewValue();
-            TinkOff tinkOff = newValue.getTableView().getItems().get(newValue.getTablePosition().getRow());
-            if (value.matches(FormatUtil.getRexSum())) {
-                tinkOff.setOperationAmountRounding(value.replaceAll(",", "."));
-            }
+        operationAmountRounding.setCellFactory(TextFieldTableCell.forTableColumn(new BigDecimalStringConverter()));
+        operationAmountRounding.setOnEditCommit((TableColumn.CellEditEvent<Transaction, BigDecimal> newValue) -> {
+            newValue.getTableView()
+                    .getItems()
+                    .get(newValue.getTablePosition().getRow())
+                    .setOperationAmountRounding(newValue.getNewValue() != null ? newValue.getNewValue() : newValue.getOldValue());
             tableView.refresh();
         });
 
-        price.setCellValueFactory(new PropertyValueFactory<>("price"));
-        price.setCellFactory(TextFieldTableCell.forTableColumn());
-        price.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, String> newValue) -> {
-            String value = newValue.getNewValue();
-            TinkOff tinkOff = newValue.getTableView().getItems().get(newValue.getTablePosition().getRow());
-            if (value.matches(FormatUtil.getRexSum())) {
-                tinkOff.setPrice(value.replaceAll(",", "."));
-            }
-            tableView.refresh();
-        });
         initMenuItem();
-
-
-/**
- *  dateTime.setCellValueFactory(new PropertyValueFactory<TinkOff, LocalDateTime>("dateTime"));
- * //       dateTime.setCellFactory((param) -> new CustomCellFactory());
- *       dateTime.setCellFactory(TextFieldTableCell.forTableColumn(new LocalDateTimeStringConverter()));
- *       dateTime.setOnEditCommit((TableColumn.CellEditEvent<TinkOff, LocalDateTime> t) ->
- *               (t.getTableView().getItems()
- *                       .get(t.getTablePosition().getRow()))
- *                       .setDateTime(t.getNewValue())
- *       );
- */
     }
 
     private void initMenuItem() {
