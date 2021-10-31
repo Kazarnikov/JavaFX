@@ -3,6 +3,7 @@ package com.finance.handler;
 
 import com.finance.convert.CsvParser;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,11 +19,11 @@ public class MyFileChooser {
                 new FileChooser.ExtensionFilter("Все файлы", "*.*"));
     }
 
-    public static void openFile() {
+    public static void openFile(Stage stage) {
         AtomicReference<List<File>> file = new AtomicReference<>();
         final FileChooser fileChooser = new FileChooser();
         configureFileChooser(fileChooser);
-        file.set(Arrays.asList(new File("/media/D/Ubunta/Загрузки/fx/Finance/src/main/resources/csv/1.csv")));
+        file.set(Arrays.asList(new File("/home/sf/Загрузки/csv/all.csv")));
         //выбор одного файла
 //        file.set(fileChooser.showOpenDialog(stage));
         //выбор несколько файлов

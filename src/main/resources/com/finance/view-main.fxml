@@ -1,26 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.chart.*?>
+<?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<?import org.controlsfx.control.*?>
-
+<?import org.controlsfx.control.CheckComboBox?>
 <AnchorPane fx:id="anchorPane" prefHeight="450.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.MainController">
     <cursor>
         <Cursor fx:constant="DEFAULT" />
     </cursor>
-    <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <MenuBar fx:id="menuBarMain">
-            <Menu mnemonicParsing="false" text="File">
+            <Menu mnemonicParsing="false" text="Файл">
+                <MenuItem mnemonicParsing="false" text="New"/>
+                <MenuItem mnemonicParsing="false" text="Open…"/>
+                <Menu mnemonicParsing="false" text="Open Recent"/>
+                <SeparatorMenuItem mnemonicParsing="false"/>
+                <MenuItem mnemonicParsing="false" text="Close"/>
+                <MenuItem mnemonicParsing="false" text="Save"/>
+                <MenuItem mnemonicParsing="false" text="Save As…"/>
+                <MenuItem mnemonicParsing="false" text="Revert"/>
+                <SeparatorMenuItem mnemonicParsing="false"/>
                 <MenuItem fx:id="menuSetting" mnemonicParsing="false" onAction="#onMenuSetting" text="Setting" />
-                <SeparatorMenuItem mnemonicParsing="false" />
+                <SeparatorMenuItem mnemonicParsing="false"/>
                 <MenuItem fx:id="menuExit" mnemonicParsing="false" text="Exit" />
             </Menu>
-            <Menu mnemonicParsing="false" text="Edit">
-                <MenuItem mnemonicParsing="false" text="Delete" />
+            <Menu mnemonicParsing="false" text="Изменить">
+                <MenuItem mnemonicParsing="false" text="Undo"/>
+                <MenuItem mnemonicParsing="false" text="Redo"/>
+                <SeparatorMenuItem mnemonicParsing="false"/>
+                <MenuItem mnemonicParsing="false" text="Cut"/>
+                <MenuItem mnemonicParsing="false" text="Copy"/>
+                <MenuItem mnemonicParsing="false" text="Paste"/>
+                <MenuItem mnemonicParsing="false" text="Delete"/>
+                <SeparatorMenuItem mnemonicParsing="false"/>
+                <MenuItem mnemonicParsing="false" text="Select All"/>
+                <MenuItem mnemonicParsing="false" text="Unselect All"/>
             </Menu>
             <Menu mnemonicParsing="false" text="Help">
                 <MenuItem mnemonicParsing="false" text="About" />

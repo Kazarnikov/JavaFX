@@ -1,14 +1,14 @@
 package com.finance.controller;
 
 import com.finance.MainApplication;
+
+import com.finance.controller.cellfactory.DateEditingCell;
 import com.finance.controller.converter.BigDecimalStringConverter;
-import com.finance.controller.converter.LocalDateStringConverter;
 import com.finance.controller.converter.LocalDateTimeStringConverter;
 import com.finance.convert.Structure;
 import com.finance.handler.MyFileChooser;
 import com.finance.model.Transaction;
 import com.finance.storage.Storage;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -16,9 +16,7 @@ import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.Label;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableColumn;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
@@ -59,7 +57,7 @@ public class MainController extends MainControllerXML {
             tabPanel.getSelectionModel().select(tabMain);
             isTabMain = false;
         }
-        MyFileChooser.openFile();
+        MyFileChooser.openFile((Stage) tabPanel.getScene().getWindow());
         getList();
     }
 
@@ -150,11 +148,16 @@ public class MainController extends MainControllerXML {
     }
     //-----Search-----//
 
+    //-----List in Table View-----//
     @Override
     protected void getList() {
         Set<Transaction> list = Storage.getList();
         if (!list.isEmpty()) {
-            observableList = FXCollections.observableArrayList(list);
+            Set<Transaction> collect = list.stream()
+                    .filter(transaction -> !Structure.STATUS_FAILED.getValue().equals(transaction.getStatus()))
+                    .filter(transaction ->  !Structure.INVESTKOPILKA.getValue().equals(transaction.getDescription()))
+                    .collect(Collectors.toSet());
+            observableList = FXCollections.observableArrayList(collect);
             tableView.getItems().clear();
             tableView.getItems().addAll(observableList);
             label.setText("Всего файлов: " + observableList.size());
@@ -164,6 +167,7 @@ public class MainController extends MainControllerXML {
         update.setDisable(tableView.getItems().isEmpty());
         save.setDisable(tableView.getItems().isEmpty());
     }
+    //-----List in Table View-----//
 
 
     @SafeVarargs
@@ -231,14 +235,16 @@ public class MainController extends MainControllerXML {
         });
 
         datePayment.setCellValueFactory(new PropertyValueFactory<>("datePayment"));
-        datePayment.setCellFactory(TextFieldTableCell.forTableColumn(new LocalDateStringConverter()));
+        datePayment.setCellFactory(param -> new DateEditingCell());
         datePayment.setOnEditCommit((TableColumn.CellEditEvent<Transaction, LocalDate> newValue) -> {
-            newValue.getTableView()
-                    .getItems()
-                    .get(newValue.getTablePosition().getRow())
-                    .setDatePayment(newValue.getNewValue() != null ? newValue.getNewValue() : newValue.getOldValue());
+                    newValue.getTableView()
+                            .getItems()
+                            .get(newValue.getTablePosition().getRow())
+                            .setDatePayment(newValue.getNewValue());
             tableView.refresh();
-        });
+                });
+//        datePayment.setCellFactory(TextFieldTableCell.forTableColumn(new LocalDateStringConverter()));
+//       datePayment.setCellFactory(ComboBoxTableCell.<Transaction, LocalDate>forTableColumn(LocalDate.now(), LocalDate.now().plusMonths(12)));
 
         numberCard.setCellValueFactory(new PropertyValueFactory<>("numberCard"));
         numberCard.setCellFactory(TextFieldTableCell.forTableColumn());

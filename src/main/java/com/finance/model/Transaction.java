@@ -40,17 +40,17 @@ public class Transaction {
         this.datePayment.set(LocalDate.now());
         this.numberCard.set("");
         this.status.set("OK");
-        this.transactionAmount.set(transactionAmount);
+        this.transactionAmount.set(transactionAmount.negate());
         this.transactionCurrency.set("RUB");
-        this.paymentAmount.set(BigDecimal.ZERO);
+        this.paymentAmount.set(transactionAmount.negate());
         this.paymentCurrency.set("RUB");
         this.cashback.set(BigDecimal.ZERO);
-        this.category.set(description);
+        this.category.set(description.split("\s")[0]);
         this.mcc.set("");
         this.description.set(description);
-        this.bonuses.set(BigDecimal.ZERO);
-        this.roundingInvestment.set(BigDecimal.ZERO);
-        this.operationAmountRounding.set(BigDecimal.ZERO);
+        this.bonuses.set(BigDecimal.ZERO.setScale(2));
+        this.roundingInvestment.set(BigDecimal.ZERO.setScale(2));
+        this.operationAmountRounding.set(transactionAmount);
     }
 
     //All construct

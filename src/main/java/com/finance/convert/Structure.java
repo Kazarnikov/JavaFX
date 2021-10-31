@@ -17,7 +17,13 @@ public enum Structure {
     ROUNDING_INVESTMENT("Округление на инвесткопилку", -1),         //14 "29.88"
     OPERATION_AMOUNT_ROUNDING("Сумма операции с округлением", -1),  //15 "299.88"
 //--------------------------------------//
-    TRANSFER_CARD("Перевод с карты");
+    TRANSFER_CARD("Перевод с карты"),
+
+    STATUS_OK("OK"),
+    STATUS_FAILED("FAILED"),
+    INVESTKOPILKA("Инвесткопилка"),
+
+    CURRENCY_RUB("RUB");
 
     private final String value;
     private Integer index;

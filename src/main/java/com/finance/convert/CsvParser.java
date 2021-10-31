@@ -50,9 +50,9 @@ public class CsvParser {
                     BigDecimal bonuses = FormatUtil.bigDecimal(str[Structure.BONUSES.getIndex()]);                                                                                              //Бонусы (включая кэшбэк)
                     BigDecimal roundingInvestment = FormatUtil.bigDecimal(str[Structure.ROUNDING_INVESTMENT.getIndex()]);                                                                       //Округление на инвесткопилку
                     BigDecimal operationAmountRounding = FormatUtil.bigDecimal(str[Structure.OPERATION_AMOUNT_ROUNDING.getIndex()]);                                                            //Сумма операции с округлением
-                    investCopilkaSum.updateAndGet(BigDecimal::plus);
+                    investCopilkaSum.updateAndGet(bigDecimal ->  bigDecimal.add(roundingInvestment));
 
-//                    if (!("6012".equals(mcc) || "FAILED".equals(status))) {
+                    if (!"6012".equals(mcc)) {
                     Transaction transaction = new Transaction(
                             dateOperation,
                             datePayment,
@@ -70,9 +70,9 @@ public class CsvParser {
                             roundingInvestment,
                             operationAmountRounding);
                     mapOff.add(transaction);
-//                    }
+                    }
                 });
-        Transaction transaction = new Transaction("Инвесткопилка", investCopilkaSum.get());
+        Transaction transaction = new Transaction("Инвесткопилка сумма", investCopilkaSum.get());
         mapOff.add(transaction);
         Storage.setList(mapOff);
     }
