@@ -18,6 +18,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -27,8 +28,6 @@ abstract class MainControllerXML {
     protected final Set<String> categorySearch = new HashSet<>();
     protected final Set<String> monthSearch = new HashSet<>();
     protected ObservableList<Transaction> observableList = null;
-    protected boolean isTabMain = false;
-    protected boolean isTabDiagram = false;
     protected boolean isTransferCard = false;
 
     @FXML
@@ -101,7 +100,11 @@ abstract class MainControllerXML {
     @FXML
     protected CheckComboBox<String> categoryBox;
     @FXML
-    protected ListView<String> listView;
+    protected TableView<Map.Entry<String, BigDecimal>> listView;
+    @FXML
+    protected TableColumn<Map.Entry<String, BigDecimal>, String> name;
+    @FXML
+    protected TableColumn<Map.Entry<String, BigDecimal>, BigDecimal> sum;
     @FXML
     protected DatePicker datePikerDiagramFrom;
     @FXML

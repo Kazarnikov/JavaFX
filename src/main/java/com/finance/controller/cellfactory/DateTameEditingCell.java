@@ -4,15 +4,15 @@ import com.finance.model.Transaction;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableCell;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
-public class DateEditingCell extends TableCell<Transaction, LocalDate> {
+public class DateTameEditingCell extends TableCell<Transaction, LocalDateTime> {
 
     private DatePicker datePicker;
 
-    public DateEditingCell() {
+    public DateTameEditingCell() {
     }
 
     @Override
@@ -33,7 +33,7 @@ public class DateEditingCell extends TableCell<Transaction, LocalDate> {
     }
 
     @Override
-    public void updateItem(LocalDate item, boolean empty) {
+    public void updateItem(LocalDateTime item, boolean empty) {
         super.updateItem(item, empty);
 
         if (empty) {
@@ -42,7 +42,7 @@ public class DateEditingCell extends TableCell<Transaction, LocalDate> {
         } else {
             if (isEditing()) {
                 if (datePicker != null) {
-                    datePicker.setValue(getDate());
+                    datePicker.setValue(getDate().toLocalDate());
                 }
                 setText(null);
                 setGraphic(datePicker);
@@ -54,17 +54,18 @@ public class DateEditingCell extends TableCell<Transaction, LocalDate> {
     }
 
     private void createDatePicker() {
-        datePicker = new DatePicker(getDate());
+        datePicker = new DatePicker(getDate().toLocalDate());
         datePicker.setMinWidth(this.getWidth() - this.getGraphicTextGap() * 2);
         datePicker.setOnAction((e) -> {
-            commitEdit(datePicker.getValue());
+            commitEdit(LocalDateTime.of(datePicker.getValue(), getDate().toLocalTime()));
         });
     }
 
-    private LocalDate getDate() {
-        return getItem() == null ? LocalDate.now() : getItem();
+    private LocalDateTime getDate() {
+        return getItem() == null ? LocalDateTime.now() : getItem();
     }
+
     private void setThisText(){
-        setText(getDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)));
+       setText(getDate().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT)));
     }
 }

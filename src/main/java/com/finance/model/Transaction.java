@@ -1,9 +1,6 @@
 package com.finance.model;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,10 +10,10 @@ import java.time.LocalDateTime;
 public class Transaction {
     //json check
 //  private final StringProperty                        description                 =       new SimpleStringProperty();
-    private final StringProperty                        quantity                    =       new SimpleStringProperty("1.0");
-    private final StringProperty                        paymentType                 =       new SimpleStringProperty("4");
-    private final StringProperty                        productType                 =       new SimpleStringProperty("1");
-    private final StringProperty                        nds                         =       new SimpleStringProperty("1");
+    private final DoubleProperty                        quantity                    =       new SimpleDoubleProperty(1.0);
+    private final DoubleProperty                        paymentType                 =       new SimpleDoubleProperty(4);
+    private final DoubleProperty                        productType                 =       new SimpleDoubleProperty(1);
+    private final DoubleProperty                        nds                         =       new SimpleDoubleProperty(1);
     //csv
     private final ObjectProperty    <LocalDateTime>     dateOperation               =       new SimpleObjectProperty<>();
     private final ObjectProperty    <LocalDate>         datePayment                 =       new SimpleObjectProperty<>();
@@ -34,24 +31,24 @@ public class Transaction {
     private final ObjectProperty    <BigDecimal>        roundingInvestment          =       new SimpleObjectProperty<>();
     private final ObjectProperty    <BigDecimal>        operationAmountRounding     =       new SimpleObjectProperty<>();
 
-    //invest moneybox
-    public Transaction(String description, BigDecimal transactionAmount) {
-        this.dateOperation.set(LocalDateTime.now());
-        this.datePayment.set(LocalDate.now());
-        this.numberCard.set("");
-        this.status.set("OK");
-        this.transactionAmount.set(transactionAmount.negate());
-        this.transactionCurrency.set("RUB");
-        this.paymentAmount.set(transactionAmount.negate());
-        this.paymentCurrency.set("RUB");
-        this.cashback.set(BigDecimal.ZERO);
-        this.category.set(description.split("\s")[0]);
-        this.mcc.set("");
-        this.description.set(description);
-        this.bonuses.set(BigDecimal.ZERO.setScale(2));
-        this.roundingInvestment.set(BigDecimal.ZERO.setScale(2));
-        this.operationAmountRounding.set(transactionAmount);
-    }
+//    //invest moneybox
+//    public Transaction(String description, BigDecimal transactionAmount) {
+//        this.dateOperation.set(LocalDateTime.now());
+//        this.datePayment.set(LocalDate.now());
+//        this.numberCard.set("");
+//        this.status.set("OK");
+//        this.transactionAmount.set(transactionAmount.negate());
+//        this.transactionCurrency.set("RUB");
+//        this.paymentAmount.set(transactionAmount.negate());
+//        this.paymentCurrency.set("RUB");
+//        this.cashback.set(BigDecimal.ZERO);
+//        this.category.set(description.split("\s")[0]);
+//        this.mcc.set("");
+//        this.description.set(description);
+//        this.bonuses.set(BigDecimal.ZERO.setScale(2));
+//        this.roundingInvestment.set(BigDecimal.ZERO.setScale(2));
+//        this.operationAmountRounding.set(transactionAmount);
+//    }
 
     //All construct
     public Transaction(LocalDateTime dateOperation,
@@ -87,55 +84,55 @@ public class Transaction {
         this.operationAmountRounding.set(operationAmountRounding);
     }
 
-    public static Transaction.Builder builder() {
-        return new Transaction.Builder();
-    }
+//    public static Transaction.Builder builder() {
+//        return new Transaction.Builder();
+//    }
 
-    public String getQuantity() {
+    public Double getQuantity() {
         return quantity.get();
     }
 
-    public void setQuantity(String quantity) {
+    public void setQuantity(Double quantity) {
         this.quantity.set(quantity);
     }
 
-    public StringProperty quantityProperty() {
+    public DoubleProperty quantityProperty() {
         return quantity;
     }
 
-    public String getPaymentType() {
+    public Double getPaymentType() {
         return paymentType.get();
     }
 
-    public void setPaymentType(String paymentType) {
+    public void setPaymentType(Double paymentType) {
         this.paymentType.set(paymentType);
     }
 
-    public StringProperty paymentTypeProperty() {
+    public DoubleProperty paymentTypeProperty() {
         return paymentType;
     }
 
-    public String getProductType() {
+    public Double getProductType() {
         return productType.get();
     }
 
-    public void setProductType(String productType) {
+    public void setProductType(Double productType) {
         this.productType.set(productType);
     }
 
-    public StringProperty productTypeProperty() {
+    public DoubleProperty productTypeProperty() {
         return productType;
     }
 
-    public String getNds() {
+    public Double getNds() {
         return nds.get();
     }
 
-    public void setNds(String nds) {
+    public void setNds(Double nds) {
         this.nds.set(nds);
     }
 
-    public StringProperty ndsProperty() {
+    public DoubleProperty ndsProperty() {
         return nds;
     }
 
@@ -322,149 +319,149 @@ public class Transaction {
     @Override
     public String toString() {
         return "{\"name\": \"" + description + '\"' +
-                ", \"price\": " + transactionAmount +
-                ", \"sum\": " + transactionAmount +
-                ", \"quantity\": " + quantity +
-                ", \"paymentType\": " + paymentType +
-                ", \"productType\": " + productType +
-                ", \"nds\": " + nds + "}";
+                ", \"price\": " + getTransactionAmount().doubleValue() * 100 +
+                ", \"sum\": " + getTransactionAmount().doubleValue() * 100 +
+                ", \"quantity\": " + getQuantity() +
+                ", \"paymentType\": " + getPaymentType() +
+                ", \"productType\": " + getProductType() +
+                ", \"nds\": " + getNds() + "}";
     }
 
-    public static class Builder {
-        private final StringProperty description = new SimpleStringProperty(); //name
-        private final StringProperty quantity = new SimpleStringProperty("1.0");
-        private final StringProperty paymentType = new SimpleStringProperty("4");
-        private final StringProperty productType = new SimpleStringProperty("1");
-        private final StringProperty nds = new SimpleStringProperty("1");
-        private final ObjectProperty<LocalDateTime> dateOperation = new SimpleObjectProperty<>();
-        private final ObjectProperty<LocalDate> datePayment = new SimpleObjectProperty<>();
-        private final StringProperty numberCard = new SimpleStringProperty();
-        private final StringProperty status = new SimpleStringProperty();
-        private final ObjectProperty<BigDecimal> transactionAmount = new SimpleObjectProperty<>();
-        private final StringProperty transactionCurrency = new SimpleStringProperty();
-        private final ObjectProperty<BigDecimal> paymentAmount = new SimpleObjectProperty<>();
-        private final StringProperty paymentCurrency = new SimpleStringProperty();
-        private final ObjectProperty<BigDecimal> cashback = new SimpleObjectProperty<>();
-        private final StringProperty category = new SimpleStringProperty();
-        private final StringProperty mcc = new SimpleStringProperty();
-        private final ObjectProperty<BigDecimal> bonuses = new SimpleObjectProperty<>();
-        private final ObjectProperty<BigDecimal> roundingInvestment = new SimpleObjectProperty<>();
-        private final ObjectProperty<BigDecimal> operationAmountRounding = new SimpleObjectProperty<>();
-
-        Builder() {
-        }
-
-        public Builder description(String description) {
-            this.description.set(description);
-            return this;
-        }
-
-        public Builder quantity(String quantity) {
-            this.quantity.set(quantity);
-            return this;
-        }
-
-        public Builder paymentType(String paymentType) {
-            this.paymentType.set(paymentType);
-            return this;
-        }
-
-        public Builder productType(String productType) {
-            this.productType.set(productType);
-            return this;
-        }
-
-        public Builder nds(String nds) {
-            this.nds.set(nds);
-            return this;
-        }
-
-        public Builder dateOperation(LocalDateTime dateOperation) {
-            this.dateOperation.set(dateOperation);
-            return this;
-        }
-
-        public Builder datePayment(LocalDate datePayment) {
-            this.datePayment.set(datePayment);
-            return this;
-        }
-
-        public Builder numberCard(String numberCard) {
-            this.numberCard.set(numberCard);
-            return this;
-        }
-
-        public Builder status(String status) {
-            this.status.set(status);
-            return this;
-        }
-
-        public Builder transactionAmount(BigDecimal transactionAmount) {
-            this.transactionAmount.set(transactionAmount);
-            return this;
-        }
-
-        public Builder transactionCurrency(String transactionCurrency) {
-            this.transactionCurrency.set(transactionCurrency);
-            return this;
-        }
-
-        public Builder paymentAmount(BigDecimal paymentAmount) {
-            this.paymentAmount.set(paymentAmount);
-            return this;
-        }
-
-        public Builder paymentCurrency(String paymentCurrency) {
-            this.paymentCurrency.set(paymentCurrency);
-            return this;
-        }
-
-        public Builder cashback(BigDecimal cashback) {
-            this.cashback.set(cashback);
-            return this;
-        }
-
-        public Builder category(String category) {
-            this.category.set(category);
-            return this;
-        }
-
-        public Builder mcc(String mcc) {
-            this.mcc.set(mcc);
-            return this;
-        }
-
-        public Builder bonuses(BigDecimal bonuses) {
-            this.bonuses.set(bonuses);
-            return this;
-        }
-
-        public Builder roundingInvestment(BigDecimal roundingInvestment) {
-            this.roundingInvestment.set(roundingInvestment);
-            return this;
-        }
-
-        public Builder operationAmountRounding(BigDecimal operationAmountRounding) {
-            this.operationAmountRounding.set(operationAmountRounding);
-            return this;
-        }
-
-        public Transaction build() {
-            return new Transaction(dateOperation.get(),
-                    datePayment.get(),
-                    numberCard.get(),
-                    status.get(),
-                    transactionAmount.get(),
-                    transactionCurrency.get(),
-                    paymentAmount.get(),
-                    paymentCurrency.get(),
-                    cashback.get(),
-                    category.get(),
-                    mcc.get(),
-                    description.get(),
-                    bonuses.get(),
-                    roundingInvestment.get(),
-                    operationAmountRounding.get());
-        }
-    }
+//    public static class Builder {
+//        private final StringProperty description = new SimpleStringProperty();
+//        private final StringProperty quantity = new SimpleStringProperty("1.0");
+//        private final StringProperty paymentType = new SimpleStringProperty("4");
+//        private final StringProperty productType = new SimpleStringProperty("1");
+//        private final StringProperty nds = new SimpleStringProperty("1");
+//        private final ObjectProperty<LocalDateTime> dateOperation = new SimpleObjectProperty<>();
+//        private final ObjectProperty<LocalDate> datePayment = new SimpleObjectProperty<>();
+//        private final StringProperty numberCard = new SimpleStringProperty();
+//        private final StringProperty status = new SimpleStringProperty();
+//        private final ObjectProperty<BigDecimal> transactionAmount = new SimpleObjectProperty<>();
+//        private final StringProperty transactionCurrency = new SimpleStringProperty();
+//        private final ObjectProperty<BigDecimal> paymentAmount = new SimpleObjectProperty<>();
+//        private final StringProperty paymentCurrency = new SimpleStringProperty();
+//        private final ObjectProperty<BigDecimal> cashback = new SimpleObjectProperty<>();
+//        private final StringProperty category = new SimpleStringProperty();
+//        private final StringProperty mcc = new SimpleStringProperty();
+//        private final ObjectProperty<BigDecimal> bonuses = new SimpleObjectProperty<>();
+//        private final ObjectProperty<BigDecimal> roundingInvestment = new SimpleObjectProperty<>();
+//        private final ObjectProperty<BigDecimal> operationAmountRounding = new SimpleObjectProperty<>();
+//
+//        Builder() {
+//        }
+//
+//        public Builder description(String description) {
+//            this.description.set(description);
+//            return this;
+//        }
+//
+//        public Builder quantity(String quantity) {
+//            this.quantity.set(quantity);
+//            return this;
+//        }
+//
+//        public Builder paymentType(String paymentType) {
+//            this.paymentType.set(paymentType);
+//            return this;
+//        }
+//
+//        public Builder productType(String productType) {
+//            this.productType.set(productType);
+//            return this;
+//        }
+//
+//        public Builder nds(String nds) {
+//            this.nds.set(nds);
+//            return this;
+//        }
+//
+//        public Builder dateOperation(LocalDateTime dateOperation) {
+//            this.dateOperation.set(dateOperation);
+//            return this;
+//        }
+//
+//        public Builder datePayment(LocalDate datePayment) {
+//            this.datePayment.set(datePayment);
+//            return this;
+//        }
+//
+//        public Builder numberCard(String numberCard) {
+//            this.numberCard.set(numberCard);
+//            return this;
+//        }
+//
+//        public Builder status(String status) {
+//            this.status.set(status);
+//            return this;
+//        }
+//
+//        public Builder transactionAmount(BigDecimal transactionAmount) {
+//            this.transactionAmount.set(transactionAmount);
+//            return this;
+//        }
+//
+//        public Builder transactionCurrency(String transactionCurrency) {
+//            this.transactionCurrency.set(transactionCurrency);
+//            return this;
+//        }
+//
+//        public Builder paymentAmount(BigDecimal paymentAmount) {
+//            this.paymentAmount.set(paymentAmount);
+//            return this;
+//        }
+//
+//        public Builder paymentCurrency(String paymentCurrency) {
+//            this.paymentCurrency.set(paymentCurrency);
+//            return this;
+//        }
+//
+//        public Builder cashback(BigDecimal cashback) {
+//            this.cashback.set(cashback);
+//            return this;
+//        }
+//
+//        public Builder category(String category) {
+//            this.category.set(category);
+//            return this;
+//        }
+//
+//        public Builder mcc(String mcc) {
+//            this.mcc.set(mcc);
+//            return this;
+//        }
+//
+//        public Builder bonuses(BigDecimal bonuses) {
+//            this.bonuses.set(bonuses);
+//            return this;
+//        }
+//
+//        public Builder roundingInvestment(BigDecimal roundingInvestment) {
+//            this.roundingInvestment.set(roundingInvestment);
+//            return this;
+//        }
+//
+//        public Builder operationAmountRounding(BigDecimal operationAmountRounding) {
+//            this.operationAmountRounding.set(operationAmountRounding);
+//            return this;
+//        }
+//
+//        public Transaction build() {
+//            return new Transaction(dateOperation.get(),
+//                    datePayment.get(),
+//                    numberCard.get(),
+//                    status.get(),
+//                    transactionAmount.get(),
+//                    transactionCurrency.get(),
+//                    paymentAmount.get(),
+//                    paymentCurrency.get(),
+//                    cashback.get(),
+//                    category.get(),
+//                    mcc.get(),
+//                    description.get(),
+//                    bonuses.get(),
+//                    roundingInvestment.get(),
+//                    operationAmountRounding.get());
+//        }
+//    }
 }

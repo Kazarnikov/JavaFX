@@ -18,7 +18,7 @@
                </padding>
                <children>
                   <Button fx:id="buttonCancelSetting" mnemonicParsing="false" prefHeight="28.0" prefWidth="120.0" text="Cancel" />
-                  <Button mnemonicParsing="false" prefHeight="28.0" prefWidth="120.0" text="Save" />
+                  <Button mnemonicParsing="false" prefHeight="28.0" prefWidth="120.0" text="%main.file.setting.save" />
                </children>
                <opaqueInsets>
                   <Insets />

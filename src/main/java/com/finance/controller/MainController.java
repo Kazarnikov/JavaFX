@@ -1,20 +1,25 @@
 package com.finance.controller;
 
 import com.finance.MainApplication;
-
 import com.finance.controller.cellfactory.DateEditingCell;
+import com.finance.controller.cellfactory.DateTameEditingCell;
 import com.finance.controller.converter.BigDecimalStringConverter;
-import com.finance.controller.converter.LocalDateTimeStringConverter;
+import com.finance.convert.JOSNParser;
 import com.finance.convert.Structure;
 import com.finance.handler.MyFileChooser;
+import com.finance.l10n.Messages;
 import com.finance.model.Transaction;
 import com.finance.storage.Storage;
+import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -25,11 +30,12 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
@@ -47,15 +53,14 @@ public class MainController extends MainControllerXML {
     //-----Buttons Main-----//
     @Override
     public void onSave(MouseEvent event) {
-        System.err.println(pieChartDiagram.getData().size());
+       JOSNParser.convertJSON(observableList);
     }
 
     @Override
     public void onSelectFile(MouseEvent event) {
-        if (isTabMain) {
+        if (!tabPanel.getTabs().contains(tabMain)) {
             tabPanel.getTabs().add(tabMain);
             tabPanel.getSelectionModel().select(tabMain);
-            isTabMain = false;
         }
         MyFileChooser.openFile((Stage) tabPanel.getScene().getWindow());
         getList();
@@ -63,15 +68,14 @@ public class MainController extends MainControllerXML {
 
     @Override
     public void onUpdate(MouseEvent event) {
-        if (isTabDiagram) {
+         if (!tabPanel.getTabs().contains(tabDiagram)) {
             tabPanel.getTabs().add(tabDiagram);
-            isTabDiagram = false;
+            tabPanel.getSelectionModel().select(tabDiagram);
         }
         monthSearch.clear();
         categorySearch.clear();
         tabPanel.getSelectionModel().select(tabDiagram);
-        categoryBox();
-        monthBox();
+        searchBox();
     }
     //-----Buttons Main-----//
 
@@ -87,37 +91,35 @@ public class MainController extends MainControllerXML {
         }
     }
 
-    private void monthBox() {
+    private void searchBox() {
+        List<Month> monthBoxItem = new ArrayList<>();
+        Set<String> categoryBoxItem = new HashSet<>();
         monthBox.getItems().clear();
-        List<String> list = observableList
-                .stream()
-                .map(e -> e.getDateOperation().getMonth().name())
-                .distinct()
-                .collect(Collectors.toList());
-        Collections.reverse(list);
-        monthBox.getItems().addAll(list);
+        categoryBox.getItems().clear();
+        observableList.forEach(transaction -> {
+            if (!monthBoxItem.contains(transaction.getDateOperation().getMonth())){
+                monthBoxItem.add(transaction.getDateOperation().getMonth());
+            }
+            categoryBoxItem.add(transaction.getCategory());
+        });
+
+        Collections.sort(monthBoxItem);
+        monthBox.getItems().addAll(monthBoxItem.stream().map(Month::name).collect(Collectors.toList()));
+        categoryBox.getItems().addAll(categoryBoxItem);
+
         monthBox.getCheckModel().getCheckedItems().addListener((ListChangeListener<String>) c -> {
             monthSearch.clear();
             monthSearch.addAll(monthBox.getCheckModel().getCheckedItems());
             getDiagramItems();
         });
-        getDiagramItems();
-    }
 
-    private void categoryBox() {
-        categoryBox.getItems().clear();
-        List<String> list = observableList
-                .stream()
-                .map(Transaction::getCategory)
-                .distinct()
-                .collect(Collectors.toList());
-        Collections.reverse(list);
-        categoryBox.getItems().addAll(list);
         categoryBox.getCheckModel().getCheckedItems().addListener((ListChangeListener<String>) c -> {
             categorySearch.clear();
             categorySearch.addAll(categoryBox.getCheckModel().getCheckedItems());
             getDiagramItems();
         });
+
+        getDiagramItems();
     }
     //-----Filter Diagram-----//
 
@@ -142,7 +144,7 @@ public class MainController extends MainControllerXML {
                 .filter(e -> e.getCategory().toLowerCase().contains(searchTextField.getText().toLowerCase())
                         || e.getDescription().toLowerCase().contains(searchTextField.getText().toLowerCase()))
                 .collect(Collectors.toList());
-        label.setText("Продуктов: " + collect.size());
+        label.setText(Messages.getResourceBundle().getString("main.tableView.label.diagram") + collect.size());
         tableView.getItems().clear();
         tableView.getItems().addAll(FXCollections.observableArrayList(collect));
     }
@@ -160,12 +162,12 @@ public class MainController extends MainControllerXML {
             observableList = FXCollections.observableArrayList(collect);
             tableView.getItems().clear();
             tableView.getItems().addAll(observableList);
-            label.setText("Всего файлов: " + observableList.size());
+            label.setText(Messages.getResourceBundle().getString("main.tableView.label.countFile") + observableList.size());
+            update.setDisable(tableView.getItems().isEmpty());
+            save.setDisable(tableView.getItems().isEmpty());
         } else {
-            label.setText("Список пустой!!!");
+            label.setText(Messages.getResourceBundle().getString("main.tableView.label.tableIsEmpty"));
         }
-        update.setDisable(tableView.getItems().isEmpty());
-        save.setDisable(tableView.getItems().isEmpty());
     }
     //-----List in Table View-----//
 
@@ -185,32 +187,45 @@ public class MainController extends MainControllerXML {
                 .filter(i -> !isTransferCard || !Structure.TRANSFER_CARD.getValue().contains(i.getDescription()))
                 .collect(Collectors.toList());
 
-        Function<Transaction, DoubleStream> sumDouble = transaction -> DoubleStream.of(transaction.getOperationAmountRounding().doubleValue());
-        double sumPercent = filterListItems.stream().flatMapToDouble(sumDouble).sum();
+        Function<Map.Entry<String, BigDecimal>, DoubleStream> sumDouble = transaction -> DoubleStream.of(transaction.getValue().doubleValue());
 
-        ToDoubleFunction<Transaction> doubleFunction = var -> var.getPaymentAmount().doubleValue();
 
-        Map<String, Double> groupByName = filterListItems
-                .stream()
-                .collect(Collectors.groupingBy(Transaction::getDescription, Collectors.summingDouble(doubleFunction)));
+//        ToDoubleFunction<Transaction> doubleFunction = var -> var.getPaymentAmount().doubleValue();
 
-        Map<String, Double> sortByValueMap = groupByName.entrySet().stream()
+        Map<String, BigDecimal> collect = filterListItems.stream()
+                .collect(Collectors.groupingBy(Transaction::getDescription,
+                        Collectors.reducing(BigDecimal.ZERO, Transaction::getTransactionAmount, BigDecimal::add)));
+
+        Map<String, BigDecimal> sortByValueMap = collect.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (e1, e2) -> e1, LinkedHashMap::new));
-        listView.getItems().addAll(sortByValueMap.keySet());
+
+        double sumPercent = collect.entrySet().stream().flatMapToDouble(sumDouble).sum();
+
+        listView.getItems().addAll(sortByValueMap.entrySet());
+
+//        listView.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+//            captionDiagram.setText((e.getPickResult().getIntersectedNode()).toString());
+//
+//        });
+
+
 //        Platform.runLater(() -> {
-            pieChartDiagram.setData(FXCollections.observableArrayList());
-            for (Map.Entry<String, Double> stringDoubleEntry : sortByValueMap.entrySet()) {
-                pieChartDiagram.getData().add(
-                        new PieChart.Data(stringDoubleEntry.getKey() + ": " + stringDoubleEntry.getValue(),
-                                stringDoubleEntry.getValue() / sumPercent * 100));
+//            pieChartDiagram.setData(FXCollections.observableArrayList());
+            List<PieChart.Data> dataList = new LinkedList<>();
+            for (Map.Entry<String, BigDecimal> stringDoubleEntry : sortByValueMap.entrySet()) {
+                dataList.add(new PieChart.Data(stringDoubleEntry.getKey() + ": " + stringDoubleEntry.getValue(),
+                        stringDoubleEntry.getValue().doubleValue() / sumPercent * 100));
             }
-            label.setText("Продуктов: " + groupByName.size());
+
+            pieChartDiagram.getData().addAll(dataList);
+
+            label.setText(Messages.getResourceBundle().getString("main.tableView.label.diagram") + sortByValueMap.size());
             pieChartDiagram.getData().forEach(data -> {
                 data.getNode().addEventHandler(MouseEvent.ANY, e -> {
                     captionDiagram.setText(
-                            String.format("%1$s %2$.2f", data.getName().split("-")[0], data.getPieValue()) + "%");
+                            String.format("%1$s ~ %2$.2f", data.getName(), data.getPieValue()) + "%");
                 });
             });
 //        });
@@ -218,19 +233,16 @@ public class MainController extends MainControllerXML {
 
     @Override
     public void initialize() {
-        tabMain.setOnClosed(event -> isTabMain = true);
-        tabDiagram.setOnClosed(event -> isTabDiagram = true);
-
         tabPanel.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
-        tableView.setPlaceholder(new Label("Нет данных"));
+        tableView.setPlaceholder(new Label(Messages.getResourceBundle().getString("main.tableView.tableIsEmpty")));
 
         dateOperation.setCellValueFactory(new PropertyValueFactory<>("dateOperation"));
-        dateOperation.setCellFactory(TextFieldTableCell.forTableColumn(new LocalDateTimeStringConverter()));
+        dateOperation.setCellFactory(param -> new DateTameEditingCell());
         dateOperation.setOnEditCommit((TableColumn.CellEditEvent<Transaction, LocalDateTime> newValue) -> {
             newValue.getTableView()
                     .getItems()
                     .get(newValue.getTablePosition().getRow())
-                    .setDateOperation(newValue.getNewValue() != null ? newValue.getNewValue() : newValue.getOldValue());
+                    .setDateOperation(newValue.getNewValue());
             tableView.refresh();
         });
 
@@ -377,30 +389,24 @@ public class MainController extends MainControllerXML {
         });
 
         initMenuItem();
+
+        name.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getKey()));
+        sum.setCellValueFactory(p -> new SimpleObjectProperty<>(p.getValue().getValue()));
     }
 
     private void initMenuItem() {
         menuExit.setAccelerator(KeyCombination.keyCombination("Ctrl+X"));
         menuExit.setOnAction(actionEvent -> System.exit(0));
-
         menuSetting.setAccelerator(KeyCombination.keyCombination("Ctrl+S"));
         menuSetting.setOnAction(actionEvent -> {
-
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("view-menu-setting.fxml"));
-                Stage newWindow = new Stage();
-                newWindow.setTitle("Second Stage");
-                newWindow.setScene(new Scene(fxmlLoader.load()));
-                Stage primaryStage = (Stage) menuBarMain.getScene().getWindow();
-                newWindow.initOwner(primaryStage);
-                newWindow.initModality(Modality.WINDOW_MODAL);
-                newWindow.setResizable(false);
-                newWindow.setX(primaryStage.getX() + 200);
-                newWindow.setY(primaryStage.getY() + 100);
-                newWindow.show();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Stage primaryStage = (Stage) menuBarMain.getScene().getWindow();
+            Stage newWindow = MainApplication.newStageLayout("view-menu-setting.fxml", "main.file.setting.name", new Stage());
+            newWindow.initOwner(primaryStage);
+            newWindow.initModality(Modality.WINDOW_MODAL);
+            newWindow.setResizable(false);
+            newWindow.setX(primaryStage.getX() + 200);
+            newWindow.setY(primaryStage.getY() + 100);
+            newWindow.show();
         });
     }
 }

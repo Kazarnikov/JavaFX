@@ -72,8 +72,8 @@ public class FormatUtil {
                 TimeZone.getDefault().toZoneId());
     }
 
-    private static Long timestamp(String args) {
-        return Timestamp.valueOf(LocalDateTime.from(FormatUtil.dateTimeFormatter().parse(args))).getTime() / 1000;
+    public static Long timestamp(LocalDateTime localDateTime) {
+        return Timestamp.valueOf(localDateTime).getTime() / 1000;
     }
 
     //Number

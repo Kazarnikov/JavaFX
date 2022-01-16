@@ -23,16 +23,11 @@ public class CsvParser {
         LinkedHashSet<String> strings = new LinkedHashSet<>();
         accumulator(strings, files);
 
-        AtomicReference<BigDecimal> investCopilkaSum = new AtomicReference<>(BigDecimal.ZERO);
         strings.stream().skip(1) // заголовки
                 .forEach(s -> {
                     String[] str = Arrays.stream(s.split(";"))
                             .map(e -> e.trim().equals("") ? "0" : e.trim().replaceAll("[\"]", "").replaceAll(",", "."))
                             .toArray(String[]::new);
-
-//                    String strTimestamp = str[Structure.DATE_OPERATION.getIndex()].replaceAll("..:..:..", "12:00:00");
-//                    long timestamp = timestamp(strTimestamp);
-//                    LocalDateTime localDateTime = localDateTime(timestamp);
 
                     LocalDateTime dateOperation = LocalDateTime.parse(str[Structure.DATE_OPERATION.getIndex()], FormatUtil.dateTimeFormatter());                                               //Дата операции
                     LocalDate datePayment = str[Structure.DATE_PAYMENT.getIndex()].isBlank()
@@ -50,7 +45,6 @@ public class CsvParser {
                     BigDecimal bonuses = FormatUtil.bigDecimal(str[Structure.BONUSES.getIndex()]);                                                                                              //Бонусы (включая кэшбэк)
                     BigDecimal roundingInvestment = FormatUtil.bigDecimal(str[Structure.ROUNDING_INVESTMENT.getIndex()]);                                                                       //Округление на инвесткопилку
                     BigDecimal operationAmountRounding = FormatUtil.bigDecimal(str[Structure.OPERATION_AMOUNT_ROUNDING.getIndex()]);                                                            //Сумма операции с округлением
-                    investCopilkaSum.updateAndGet(bigDecimal ->  bigDecimal.add(roundingInvestment));
 
                     if (!"6012".equals(mcc)) {
                     Transaction transaction = new Transaction(
@@ -72,8 +66,6 @@ public class CsvParser {
                     mapOff.add(transaction);
                     }
                 });
-        Transaction transaction = new Transaction("Инвесткопилка сумма", investCopilkaSum.get());
-        mapOff.add(transaction);
         Storage.setList(mapOff);
     }
 
